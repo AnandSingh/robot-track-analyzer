@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  csv-plot-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: csv-plot-server
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./app/static/plots:/app/app/static/plots
+    restart: unless-stopped
