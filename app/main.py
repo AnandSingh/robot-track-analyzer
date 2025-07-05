@@ -1,7 +1,7 @@
 # robot_plotter/app.py
 import os
 import sqlite3
-from flask import Flask, request, render_template, redirect, url_for
+from flask import Flask, request, render_template, redirect, url_for, flash
 from werkzeug.utils import secure_filename
 from utils import process_csv_and_plot
 
@@ -10,6 +10,7 @@ PLOT_FOLDER = 'static/plots'
 ALLOWED_EXTENSIONS = {'csv'}
 
 app = Flask(__name__)
+app.secret_key = 'supersecretkey'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['PLOT_FOLDER'] = PLOT_FOLDER
 
@@ -51,10 +52,14 @@ def index():
             conn.commit()
             conn.close()
 
-            # Process file
-            plot_path = process_csv_and_plot(filepath, app.config['PLOT_FOLDER'])
-
-            return render_template('index.html', plot_path=plot_path, uploaded=True)
+            # Process file with error handling
+            try:
+                plot_path = process_csv_and_plot(filepath, app.config['PLOT_FOLDER'])
+                return render_template('index.html', plot_path=plot_path, uploaded=True)
+            except KeyError as e:
+                flash(f"CSV file is missing expected column: {str(e)}")
+            except Exception as e:
+                flash(f"Error processing file: {str(e)}")
 
     return render_template('index.html', uploaded=False)
 
